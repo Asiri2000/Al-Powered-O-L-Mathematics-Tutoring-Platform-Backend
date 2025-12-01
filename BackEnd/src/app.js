@@ -1,0 +1,32 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const morgan = require('morgan');
+
+// Import routes
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const questionRoutes = require('./routes/questionRoutes');
+const tutorRoutes = require('./routes/tutorRoutes');
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(morgan('dev'));
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/questions', questionRoutes);
+app.use('/api/tutors', tutorRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    res.status(err.status || 500).json({
+        message: err.message || 'Internal Server Error',
+    });
+});
+
+module.exports = app;

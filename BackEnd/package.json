@@ -1,0 +1,41 @@
+{
+  "name": "ai-powered-o-l-mathematics-tutoring-platform-backend",
+  "version": "1.0.0",
+  "description": "Backend for the AI-Powered O-L Mathematics Tutoring Platform",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^8.6.0",
+    "express": "^4.22.0",
+    "express-validator": "^7.3.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.13.23",
+    "morgan": "^1.10.1",
+    "nodemailer": "^7.0.11",
+    "pg": "^8.16.3",
+    "sequelize": "^6.37.7"
+  },
+  "devDependencies": {
+    "jest": "^26.6.0",
+    "nodemon": "^2.0.22",
+    "supertest": "^6.1.0"
+  },
+  "keywords": [
+    "AI",
+    "Mathematics",
+    "Tutoring",
+    "Platform",
+    "Backend"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
