@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { registerUser } from '../api';
+import { registerUser } from '../../api';
 const Signin = () => {
   const [formData, setFormData] = useState({
     studentName: '',
@@ -15,7 +15,7 @@ const Signin = () => {
   const [isLoading, setIsLoading] = useState(false); 
   const navigate = useNavigate();
 
-  const schools = ['school1', 'school2', 'school3'];
+  const schools = ['Kg/Mw/Halpitiya K.V', 'Kg/Mw/Parakrama M.V', 'Kg/Puwakdeniya Model School'];
   const grades = ['10', '11'];
 
   const handleChange = (e) => {
@@ -56,13 +56,6 @@ const Signin = () => {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     
-    if (!formData.grade) {
-      newErrors.grade = 'Please select a grade';
-    }
-    
-    if (!formData.school) {
-      newErrors.school = 'Please select a school';
-    }
     
     return newErrors;
   };
