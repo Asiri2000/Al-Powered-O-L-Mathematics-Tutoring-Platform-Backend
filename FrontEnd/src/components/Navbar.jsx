@@ -8,6 +8,7 @@ import {
 const Navbar = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState(null);
+  const [userRole, setUserRole] = useState(null); 
 
   // --- CHECK LOGIN STATUS ---
   useEffect(() => {
@@ -15,10 +16,13 @@ const Navbar = () => {
     const checkAuth = () => {
       const token = sessionStorage.getItem('accessToken');
       const storedName = sessionStorage.getItem('username');
+      const storedRole = sessionStorage.getItem('user_role'); 
       if (token && storedName) {
         setUsername(storedName);
+        setUserRole(storedRole);
       } else {
         setUsername(null);
+        setUserRole(null);
       }
     };
 
@@ -29,6 +33,15 @@ const Navbar = () => {
     window.addEventListener('authChange', checkAuth);
     return () => window.removeEventListener('authChange', checkAuth);
   }, []);
+
+  // --- NEW: Handle Profile Click ---
+  const handleProfileClick = () => {
+    if (userRole === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/performance');
+    }
+  };
 
   const handleLogout = () => {
     // Clear data
@@ -73,7 +86,8 @@ const Navbar = () => {
           {username ? (
             // --- IF LOGGED IN: Show Name + Logout ---
             <>
-              <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-full border border-green-100">
+              <div onClick={handleProfileClick}
+               className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-full border border-green-100">
                 <div className="p-1 bg-green-200 rounded-full">
                    <User className="w-4 h-4 text-green-800" />
                 </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { loginUser } from '../api';
+import { loginUser,getCurrentUser } from '../../api';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -51,16 +51,21 @@ const Login = () => {
       try {
         // 1. Call Backend
         const data = await loginUser(formData);
-        
-        // 2. Save Token (Session Storage is safer than LocalStorage for now)
         sessionStorage.setItem('accessToken', data.access_token);
-        sessionStorage.setItem('username', formData.username);
-
+        
+        // 2. Fetch User Details to get the ROLE
+        const userProfile = await getCurrentUser();
+        // 3. Store Username AND Role
+        sessionStorage.setItem('username', userProfile.username); // or userProfile.full_name
+        sessionStorage.setItem('user_role', userProfile.user_role);  // <--- SAVE ROLE HERE
         window.dispatchEvent(new Event("authChange"));
         // 3. Redirect
         // You might want to fetch user details here using the token, but for now just redirect
-        navigate('/'); 
-        
+        if (userProfile.user_role === 'admin') {
+            navigate('/admin');
+        } else {
+            navigate('/');
+        }        
       } catch (err) {
         console.error(err);
         setErrors({ 

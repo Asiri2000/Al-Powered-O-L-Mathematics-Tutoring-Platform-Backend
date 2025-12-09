@@ -28,3 +28,36 @@ export const loginUser = async (credentials) => {
     throw error.response ? error.response.data : new Error('Login failed');
   }
 };
+
+export const getAllUsers = async () => {
+  const token = sessionStorage.getItem('accessToken');
+  const response = await axios.get(`${API_URL}/users/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export const updateUserRole = async (userId, newRole) => {
+  const token = sessionStorage.getItem('accessToken');
+  const response = await axios.put(
+    `${API_URL}/users/${userId}/role`, 
+    { user_role: newRole }, // Body
+    { headers: { Authorization: `Bearer ${token}` } } // Headers
+  );
+  return response.data;
+};
+
+export const deleteUser = async (userId) => {
+  const token = sessionStorage.getItem('accessToken');
+  await axios.delete(`${API_URL}/users/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
+export const getCurrentUser = async () => {
+  const token = sessionStorage.getItem('accessToken');
+  const response = await axios.get(`${API_URL}/users/me`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};

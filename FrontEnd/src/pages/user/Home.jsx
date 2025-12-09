@@ -8,7 +8,7 @@ import {
   ArrowRight, 
   CheckCircle2 
 } from 'lucide-react';
-import img1 from '../assets/student.png'; 
+import img1 from '../../assets/student.png'; 
 
 const Home = () => {
   const navigate = useNavigate();
