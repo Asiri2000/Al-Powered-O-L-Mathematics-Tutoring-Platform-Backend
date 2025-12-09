@@ -6,8 +6,8 @@ from datetime import datetime  # <--- Fix 1: Import datetime
 # 1. Base Schema (Shared)
 class UserBase(BaseModel):
     username: str
-    grade: str
-    school: str
+    grade: Optional[str] = None
+    school: Optional[str] = None
 
 # 2. Schema for REGISTERING (Input)
 class UserCreate(UserBase):
@@ -23,16 +23,14 @@ class UserResponse(UserBase):
     id: int
     user_role: str
     is_active: bool
-    
-    # Fix 2: Change type from str to datetime so Pydantic can read the DB object
-    created_at: Optional[datetime] = None 
-    
-    # Fix 3: Handle the name mapping explicitly for Output
-    # We use serialization_alias to send "studentName" to Frontend
-    # We use validation_alias to read "full_name" from Database
-    full_name: str = Field(..., validation_alias="full_name", serialization_alias="studentName")
 
-    model_config = ConfigDict(from_attributes=True)
+class UserRoleUpdate(BaseModel):
+    user_role: str
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    grade: Optional[str] = None
+    school: Optional[str] = None
 
 # 4. Token Schemas
 class Token(BaseModel):

@@ -12,8 +12,8 @@ class User(Base):
     
     # Student fields
     full_name = Column(String, nullable=False)
-    grade = Column(String, nullable=False)
-    school = Column(String, nullable=False)
+    grade = Column(String, nullable=True)
+    school = Column(String, nullable=True)
 
     # New Role Field (Defaults to "user")
     user_role = Column(String, default="user", nullable=False)
