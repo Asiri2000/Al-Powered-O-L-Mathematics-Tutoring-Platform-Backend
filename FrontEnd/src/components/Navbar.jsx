@@ -1,12 +1,59 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom'; // <--- FIX 1: Import useNavigate
-import { BookOpen, Lightbulb, MessageSquare, Bot, BarChart2, LogIn, UserPlus,Home } from 'lucide-react';
-// Remove: import { Navigate } from 'react-router-dom'; 
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { 
+  BookOpen, Lightbulb, MessageSquare, Bot, 
+  BarChart2, LogIn, UserPlus, Home, LogOut, User 
+} from 'lucide-react';
 
 const Navbar = () => {
-  const navigate = useNavigate(); // <--- FIX 2: Use the hook function
+  const navigate = useNavigate();
+  const [username, setUsername] = useState(null);
+  const [userRole, setUserRole] = useState(null); 
 
-  // Helper function for styling classes to keep JSX clean
+  // --- CHECK LOGIN STATUS ---
+  useEffect(() => {
+    // 1. Function to check storage
+    const checkAuth = () => {
+      const token = sessionStorage.getItem('accessToken');
+      const storedName = sessionStorage.getItem('username');
+      const storedRole = sessionStorage.getItem('user_role'); 
+      if (token && storedName) {
+        setUsername(storedName);
+        setUserRole(storedRole);
+      } else {
+        setUsername(null);
+        setUserRole(null);
+      }
+    };
+
+    // 2. Run on mount
+    checkAuth();
+
+    // 3. Listen for login/logout events (so it updates without refreshing)
+    window.addEventListener('authChange', checkAuth);
+    return () => window.removeEventListener('authChange', checkAuth);
+  }, []);
+
+  // --- NEW: Handle Profile Click ---
+  const handleProfileClick = () => {
+    if (userRole === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/performance');
+    }
+  };
+
+  const handleLogout = () => {
+    // Clear data
+    sessionStorage.clear();
+    // Update State
+    setUsername(null);
+    // Notify other components
+    window.dispatchEvent(new Event("authChange"));
+    // Redirect
+    navigate('/login');
+  };
+
   const getLinkClasses = (isActive) => {
     return `flex items-center gap-2 pb-3 pt-2 text-sm font-medium transition-all ${
       isActive
@@ -15,16 +62,12 @@ const Navbar = () => {
     }`;
   };
 
-  const handlePerformanceClick = () => {
-    navigate('/performance'); // Now this will work correctly
-  };
-
   const getIconClasses = (isActive) => {
     return `p-1 rounded ${isActive ? 'bg-green-100' : 'bg-gray-100'}`;
   };
 
   return (
-    <div className="w-full bg-white flex flex-col shadow-sm">
+    <div className="w-full bg-white flex flex-col shadow-sm sticky top-0 z-50">
       
       {/* --- TOP ROW --- */}
       <div className="flex justify-between items-center px-6 py-4">
@@ -38,23 +81,53 @@ const Navbar = () => {
           </h1>
         </div>
 
+        {/* --- AUTH BUTTONS SECTION --- */}
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 text-gray-600 font-medium hover:text-green-700 transition-colors">
-            <LogIn className="w-4 h-4" />
-            Login
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 font-semibold rounded-lg hover:bg-green-200 transition-colors border border-green-200">
-            <UserPlus className="w-4 h-4" />
-            Sign Up
-          </button>
+          {username ? (
+            // --- IF LOGGED IN: Show Name + Logout ---
+            <>
+              <div onClick={handleProfileClick}
+               className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-full border border-green-100">
+                <div className="p-1 bg-green-200 rounded-full">
+                   <User className="w-4 h-4 text-green-800" />
+                </div>
+                <span className="text-sm font-semibold text-green-900 capitalize">
+                  {username}
+                </span>
+              </div>
+              
+              <button 
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 text-gray-500 font-medium hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </>
+          ) : (
+            // --- IF LOGGED OUT: Show Login + Sign Up ---
+            <>
+              <button 
+                onClick={() => navigate('/login')}
+                className="flex items-center gap-2 px-4 py-2 text-gray-600 font-medium hover:text-green-700 transition-colors">
+                <LogIn className="w-4 h-4" />
+                Login
+              </button>
+              <button 
+                onClick={() => navigate('/signup')}
+                className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 font-semibold rounded-lg hover:bg-green-200 transition-colors border border-green-200">
+                <UserPlus className="w-4 h-4" />
+                Sign Up
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      {/* --- BOTTOM ROW --- */}
+      {/* --- BOTTOM ROW (Links) --- */}
       <div className="flex justify-between items-center px-6 border-b border-gray-200 bg-green-50/30">
-        
         <div className="flex gap-8">
-          {/* home*/}
           <NavLink to="/" end className={({ isActive }) => getLinkClasses(isActive)}>
             {({ isActive }) => (
               <>
@@ -66,7 +139,6 @@ const Navbar = () => {
             )}
           </NavLink>
 
-          {/* Tab 1: Question Generator */}
           <NavLink to="/generator" className={({ isActive }) => getLinkClasses(isActive)}>
             {({ isActive }) => (
               <>
@@ -78,7 +150,6 @@ const Navbar = () => {
             )}
           </NavLink>
 
-          {/* Tab 2: Learning Companion */}
           <NavLink to="/companion" className={({ isActive }) => getLinkClasses(isActive)}>
              {({ isActive }) => (
               <>
@@ -93,7 +164,7 @@ const Navbar = () => {
 
         <div className="pb-2">
           <button 
-            onClick={handlePerformanceClick}
+            onClick={() => navigate('/performance')}
             className="flex items-center gap-2 px-4 py-1.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-md border border-gray-300 hover:bg-white hover:shadow-sm transition-all"
           >
             Your Performance
