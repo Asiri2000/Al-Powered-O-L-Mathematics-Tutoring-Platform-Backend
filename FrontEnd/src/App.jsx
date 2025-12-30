@@ -11,6 +11,8 @@ import Login from './pages/user/login';
 import Signin from './pages/user/signin';
 import UserDetails from './pages/admin/UserDetails';
 import AdminPage from './pages/admin/adminPage';
+import LessonCompanion from './pages/user/lessonCompanion';
+import Lessons from './pages/user/lessons';
 function App() {
 
   return (
@@ -26,6 +28,8 @@ function App() {
           <Route path="/signup" element={<Signin />} />
           <Route path="/admin/users" element={<UserDetails />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/lesson/:id" element={<LessonCompanion />} />
+          <Route path="/lessons" element={<Lessons />} />
         </Routes>
         <Footer />
     </Router>

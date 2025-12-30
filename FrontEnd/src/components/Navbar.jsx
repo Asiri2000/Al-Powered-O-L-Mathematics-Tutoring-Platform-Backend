@@ -160,6 +160,17 @@ const Navbar = () => {
               </>
             )}
           </NavLink>
+
+          <NavLink to="/lessons" className={({ isActive }) => getLinkClasses(isActive)}>
+             {({ isActive }) => (
+              <>
+                <div className={getIconClasses(isActive)}>
+                  <Lightbulb className="w-4 h-4" />
+                </div>
+                Lesson Companion
+              </>
+            )}
+          </NavLink>
         </div>
 
         <div className="pb-2">
