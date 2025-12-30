@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.db.session import engine
 from app.db.base import Base
 from app.users import router as user_router
+from app.lessons import router as lessons_router
 # IMPORTANT: Import models here so SQLAlchemy "sees" them before creating tables
 from app.users import models as user_models
 
@@ -54,6 +55,11 @@ app.include_router(
     user_router.router, 
     prefix=f"{settings.API_V1_STR}/users", 
     tags=["users"]
+)
+app.include_router(
+    lessons_router, 
+    prefix="/lessons",
+    tags=["Lessons"] 
 )
 
 # --- Health Check Route ---
