@@ -33,3 +33,16 @@ class LessonSchema(BaseModel):
     
     class Config:
         from_attributes = True
+
+# Schema for CREATING an Option
+class OptionCreate(BaseModel):
+    option_text: str
+    is_correct: bool
+
+# Schema for CREATING a Step (The Form Data)
+class StepCreate(BaseModel):
+    lesson_id: int
+    theory_text: str
+    question_text: str
+    theory_media_url: Optional[str] = None # The URL from Cloudinary
+    options: List[OptionCreate]

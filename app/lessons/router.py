@@ -6,9 +6,8 @@ from typing import List
 
 # Import your DB setup
 from app.db.session import get_db 
-from app.lessons.models import Lesson, LessonStep
-from app.lessons.schemas import StepSchema, LessonSchema
-
+from app.lessons.schemas import StepSchema, LessonSchema, StepCreate # Import StepCreate
+from app.lessons.models import Lesson, LessonStep, AnswerOption # Import models
 router = APIRouter()
 
 # 1. Get List of All Lessons
@@ -48,3 +47,39 @@ async def get_lesson_content(lesson_id: int, db: AsyncSession = Depends(get_db))
     steps = result_steps.scalars().all()
 
     return steps
+
+@router.post("/add-step")
+async def create_lesson_step(step_data: StepCreate, db: AsyncSession = Depends(get_db)):
+    # 1. Calculate the next order_index automatically
+    # (Find the highest current index for this lesson and add 1)
+    result = await db.execute(
+        select(LessonStep.order_index)
+        .where(LessonStep.lesson_id == step_data.lesson_id)
+        .order_by(LessonStep.order_index.desc())
+        .limit(1)
+    )
+    last_index = result.scalar_one_or_none()
+    new_index = (last_index or 0) + 1
+
+    # 2. Create the Step (Theory + Question)
+    new_step = LessonStep(
+        lesson_id=step_data.lesson_id,
+        order_index=new_index,
+        theory_text=step_data.theory_text,
+        question_text=step_data.question_text,
+        theory_media_url=step_data.theory_media_url
+    )
+    db.add(new_step)
+    await db.flush() # Flush to generate the new_step.id
+
+    # 3. Create the Answer Options
+    for opt in step_data.options:
+        new_option = AnswerOption(
+            lesson_step_id=new_step.id,
+            option_text=opt.option_text,
+            is_correct=opt.is_correct
+        )
+        db.add(new_option)
+
+    await db.commit()
+    return {"status": "success", "step_id": new_step.id}
