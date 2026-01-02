@@ -72,7 +72,7 @@ export default function LessonCompanion() {
         <h1 className="text-3xl font-bold text-green-800 mb-2">Lesson Complete!</h1>
         <p className="text-green-700 mb-6">You scored {correctCount} correct answers.</p>
         <button 
-          onClick={() => window.location.reload()} // Or navigate back to home
+          onClick={() => navigate('/lessons')} // Navigate back to lessons list
           className="bg-green-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-green-700"
         >
           Return to Home
