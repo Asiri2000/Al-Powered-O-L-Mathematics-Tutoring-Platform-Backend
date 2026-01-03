@@ -8,15 +8,11 @@ export default function LearningSlide({ stepData, onNext }) {
   const [isImageVisible, setIsImageVisible] = useState(true);
 
   const handleCheck = () => {
-    // Find the selected option object
     const option = stepData.options.find(opt => opt.id === selectedOption);
-    
     if (option?.is_correct) {
       setStatus('correct');
-      // Optional: new Audio('/sounds/correct.mp3').play();
     } else {
       setStatus('wrong');
-      // Optional: new Audio('/sounds/wrong.mp3').play();
     }
   };
 
@@ -27,150 +23,140 @@ export default function LearningSlide({ stepData, onNext }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [isImageOpen]);
 
-  // Hide image by default on smaller screens so options remain visible without scrolling
   useEffect(() => {
     setIsImageVisible(window.innerWidth >= 768);
   }, []);
 
+  // Find correct option text to show when the user answers incorrectly
+  const correctOptionText = stepData?.options?.find(opt => opt.is_correct)?.option_text ?? '';
+
   return (
-    <div className="flex flex-col h-full max-w-3xl mx-auto p-6 gap-4">
+    // 1. MAIN CONTAINER: Takes full height of parent, splits into Scrollable Body + Footer
+    <div className="flex flex-col h-full w-full max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       
-      {/* --- TOP SECTION: THEORY CARD --- */}
-      {/* Only show if theory_text exists */}
-      {stepData.theory_text && (
-        <motion.div
-          initial={{ y: -10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg shadow-md flex flex-col md:flex-row items-center gap-4"
-        >
-          <div className="md:w-1/2 flex flex-col">
-            <div className="flex items-start justify-between">
-              <h3 className="text-sm font-bold text-blue-700 uppercase tracking-wide mb-2">
+      {/* 2. SCROLLABLE BODY: Wraps Theory + Question. This part scrolls independently. */}
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+        
+        {/* --- THEORY SECTION --- */}
+        {stepData.theory_text && (
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wide">
                 Quick Tip
               </h3>
-
               {stepData.theory_media_url && (
                 <button
-                  onClick={() => setIsImageVisible(v => !v)}
-                  className="text-xs text-blue-600 underline md:hidden ml-2"
+                  onClick={() => setIsImageVisible(!isImageVisible)}
+                  className="text-xs text-blue-600 underline md:hidden"
                 >
-                  {isImageVisible ? 'Hide image' : 'Show image'}
+                  {isImageVisible ? 'Hide Image' : 'Show Image'}
                 </button>
               )}
             </div>
 
-            <p className="text-gray-700 text-sm leading-relaxed">
-              {stepData.theory_text}
-            </p>
-
-            {stepData.theory_media_url && !isImageVisible && (
-              <div className="mt-2 md:hidden">
-                <button onClick={() => setIsImageVisible(true)} className="text-sm text-blue-600 underline">Show image</button>
+            <div className={`flex flex-col md:flex-row gap-6 ${!isImageVisible ? 'items-start' : ''}`}>
+              <div className="flex-1">
+                 <p className="text-gray-700 text-sm md:text-base leading-relaxed">
+                  {stepData.theory_text}
+                </p>
               </div>
-            )}
-          </div>
 
-          {stepData.theory_media_url && isImageVisible && (
-            <>
-              <motion.img
-                whileHover={{ scale: 1.02 }}
-                onClick={() => setIsImageOpen(true)}
-                src={stepData.theory_media_url}
-                alt="Visual Aid"
-                className="md:w-1/2 w-full rounded-md max-h-[40vh] md:max-h-[56vh] h-auto object-contain bg-white shadow-sm cursor-zoom-in"
-              />
-
-              {isImageOpen && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
-                  onClick={() => setIsImageOpen(false)}
-                >
-                  <motion.img
-                    initial={{ scale: 0.98 }}
-                    animate={{ scale: 1 }}
+              {stepData.theory_media_url && isImageVisible && (
+                <div className="md:w-1/2 flex justify-center">
+                  <img
+                    onClick={() => setIsImageOpen(true)}
                     src={stepData.theory_media_url}
-                    alt="Full Visual"
-                    className="max-w-[95vw] max-h-[95vh] object-contain rounded-md shadow-xl"
-                    onClick={(e) => e.stopPropagation()}
+                    alt="Visual Aid"
+                    className="rounded-lg border border-blue-100 shadow-sm cursor-zoom-in max-h-48 md:max-h-64 object-contain bg-white"
                   />
-                </motion.div>
+                </div>
               )}
-            </>
-          )}
-        </motion.div>
-      )}
+            </div>
+          </div>
+        )}
 
-      {/* --- MIDDLE SECTION: QUESTION --- */}
-      <div className="flex-1 flex flex-col justify-center overflow-visible">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 text-center md:text-left">
-          {stepData.question_text}
-        </h2> 
+        {/* --- QUESTION SECTION --- */}
+        <div className="flex flex-col justify-center">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 leading-tight">
+            {stepData.question_text}
+          </h2>
 
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          className="pr-2 pb-2"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-4">
             {stepData.options.map((option) => (
               <motion.button
                 key={option.id}
                 whileTap={{ scale: 0.98 }}
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                 onClick={() => status === 'idle' && setSelectedOption(option.id)}
-                className={`w-full p-3 md:p-4 rounded-xl border-2 text-left md:text-left font-medium text-sm md:text-base transition-all shadow-sm ${
+                className={`p-4 rounded-xl border-2 text-left transition-all ${
                   selectedOption === option.id
                     ? status === 'correct'
-                      ? 'bg-green-100 border-green-500 text-green-800 ring-2 ring-green-200'
+                      ? 'bg-green-100 border-green-500 text-green-800'
                       : status === 'wrong'
-                        ? 'bg-red-100 border-red-500 text-red-800 ring-2 ring-red-200'
-                        : 'bg-blue-50 border-blue-400 text-blue-800 ring-2 ring-blue-200'
-                    : 'bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md'
+                        ? 'bg-red-100 border-red-500 text-red-800'
+                        : 'bg-blue-50 border-blue-500 text-blue-800'
+                    : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                 }`}
               >
-                <div className="break-words">{option.option_text}</div>
+                <span className="font-medium text-sm md:text-base">{option.option_text}</span>
               </motion.button>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
 
-      {/* --- BOTTOM SECTION: ACTION BUTTON --- */}
-      <div className="sticky bottom-0 bg-white pt-3 border-t border-gray-100 mt-2 pb-4">
+      {/* --- WRONG ANSWER HINT --- */}
+      {status === 'wrong' && (
+        <div className="p-4 bg-red-50 border-l-4 border-red-400 text-red-700 rounded-md mx-4 md:mx-8 mb-2">
+          <p className="text-sm"><strong>Correct answer is:</strong> {correctOptionText}. Please refer the note and try again.</p>
+        </div>
+      )}
+
+      {/* 3. FIXED FOOTER: Always visible at bottom */}
+      <div className="p-4 border-t border-gray-100 bg-white z-10">
         {status === 'idle' ? (
-          <motion.button 
-            whileHover={{ scale: 1.02 }}
+          <button 
             onClick={handleCheck}
             disabled={!selectedOption}
-            className="w-full py-3 rounded-xl bg-gray-900 text-white font-bold disabled:opacity-50 hover:bg-black transition-colors"
+            className="w-full py-3.5 rounded-xl bg-gray-900 text-white font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-black transition-colors shadow-lg"
           >
-            CHECK ANSWER
-          </motion.button>
+            Check Answer
+          </button>
         ) : (
-          <motion.button 
-            initial={{ scale: 0.9, opacity: 0.9 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+          <button 
             onClick={() => {
-                // Reset state for next slide
-                setStatus('idle');
-                setSelectedOption(null);
-                onNext(status === 'correct');
+                if (status === 'correct') {
+                  setStatus('idle');
+                  setSelectedOption(null);
+                  onNext(true);
+                } else {
+                  // Wrong answer: reset so student can try again; do NOT advance
+                  setStatus('idle');
+                  setSelectedOption(null);
+                }
             }}
-            className={`w-full py-3 rounded-xl text-white font-bold shadow-lg ${
+            className={`w-full py-3.5 rounded-xl text-white font-bold text-lg shadow-lg ${
               status === 'correct' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'
             }`}
           >
-            {status === 'correct' ? 'CONTINUE' : 'GOT IT'}
-          </motion.button>
-        )}
+            {status === 'correct' ? 'Continue' : 'Got it'}
+          </button>
+        )} 
       </div>
+
+      {/* --- LIGHTBOX MODAL (Full Screen Image) --- */}
+      {isImageOpen && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={() => setIsImageOpen(false)}
+        >
+          <img
+            src={stepData.theory_media_url}
+            className="max-w-full max-h-full rounded-lg shadow-2xl object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button className="absolute top-4 right-4 text-white text-4xl">&times;</button>
+        </div>
+      )}
     </div>
   );
 }
