@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, BarChart3, Settings, Shield, ArrowRight, Activity } from 'lucide-react';
+import { Users, PlusSquare, Settings, Shield, ArrowRight, Activity } from 'lucide-react';
 import { getAllUsers } from '../../api';
 
 function AdminPage() {
@@ -114,18 +114,18 @@ function AdminPage() {
               <ArrowRight className="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform" />
             </button>
 
-            {/* Analytics Button */}
+            {/* Add Content Button */}
             <button
-              onClick={() => alert('Analytics coming soon!')}
+              onClick={() => navigate('/admin/add-content')}
               className="flex items-center justify-between p-6 bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-200 rounded-lg hover:shadow-lg hover:scale-105 transition-all group"
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-purple-200 rounded-lg flex items-center justify-center group-hover:bg-purple-300 transition-colors">
-                  <BarChart3 className="w-6 h-6 text-purple-600" />
+                  <PlusSquare className="w-6 h-6 text-purple-600" />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-bold text-slate-900">Analytics</h3>
-                  <p className="text-sm text-slate-600">View platform statistics</p>
+                  <h3 className="font-bold text-slate-900">Add Content</h3>
+                  <p className="text-sm text-slate-600">Create lesson content</p>
                 </div>
               </div>
               <ArrowRight className="w-5 h-5 text-purple-600 group-hover:translate-x-1 transition-transform" />
