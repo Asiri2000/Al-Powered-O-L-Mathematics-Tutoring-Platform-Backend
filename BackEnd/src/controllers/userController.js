@@ -1,72 +1,64 @@
 const User = require('../models/User');
 
-// Fetch user profile by ID
-exports.getUserProfile = async (req, res) => {
-    try {
-        const userId = req.params.id;
-        const user = await User.findById(userId);
-        
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
-    }
-};
-
-// Update user information
-exports.updateUserProfile = async (req, res) => {
-    try {
-        const userId = req.params.id;
-        const updatedData = req.body;
-
-        const user = await User.findByIdAndUpdate(userId, updatedData, { new: true });
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        res.status(200).json(user);
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
-    }
-};
-
-// Delete user account
-exports.deleteUserAccount = async (req, res) => {
-    try {
-        const userId = req.params.id;
-
-        const user = await User.findByIdAndDelete(userId);
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        res.status(204).send();
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
-    }
-};
-
-// Get user profile
+/**
+ * @desc    Get logged-in user profile
+ * @route   GET /api/users/profile
+ * @access  Private
+ */
 exports.getProfile = async (req, res) => {
-  // ...existing code...
+  try {
+    res.status(200).json(req.user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
 };
 
-// Update user profile
+/**
+ * @desc    Update logged-in user profile
+ * @route   PUT /api/users/profile
+ * @access  Private
+ */
 exports.updateProfile = async (req, res) => {
-  // ...existing code...
+  try {
+    const updatedUser = await req.user.update(req.body);
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
 };
 
-// Delete user
+/**
+ * @desc    Delete logged-in user account
+ * @route   DELETE /api/users/:id
+ * @access  Private
+ */
 exports.deleteUser = async (req, res) => {
-  // ...existing code...
+  try {
+    const user = await User.findByPk(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await user.destroy();
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
 };
 
-// Get all users (admin)
+/**
+ * @desc    Get all users (Admin only – optional)
+ * @route   GET /api/users
+ * @access  Private/Admin
+ */
 exports.getAllUsers = async (req, res) => {
-  // ...existing code...
+  try {
+    const users = await User.findAll({
+      attributes: { exclude: ['password'] },
+    });
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
 };
