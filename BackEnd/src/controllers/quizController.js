@@ -1,27 +1,45 @@
-// BackEnd/src/controllers/quizController.js
 const QuizAttempt = require("../models/QuizAttempt");
 const ChapterMastery = require("../models/ChapterMastery");
+const Question = require("../models/Question");
 
 exports.submitQuiz = async (req, res) => {
   try {
-    const { user_id, chapter, answers, difficulty_level } = req.body;
+    const user_id = req.user.id; // 🔒 Authenticated user
+    const { chapter, answers, difficulty_level } = req.body;
+
+    if (!chapter || !Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({ message: "Invalid quiz payload" });
+    }
 
     let correct = 0;
     let totalTime = 0;
 
     for (const a of answers) {
-      const is_correct = a.selected_answer === a.correct_answer;
-      if (is_correct) correct++;
-      totalTime += a.time_taken;
+      const { questionId, selected_answer, time_taken } = a;
 
+      // 🔒 1. Fetch question from DB (source of truth)
+      const question = await Question.findByPk(questionId);
+
+      if (!question) {
+        return res.status(404).json({ message: "Question not found" });
+      }
+
+      // 🔒 2. Backend validation
+      const is_correct = question.correctAnswer === selected_answer;
+
+      if (is_correct) correct++;
+      totalTime += time_taken;
+
+      // 🔒 3. Store validated attempt (FIX IS HERE)
       await QuizAttempt.create({
         user_id,
+        question_id: question.id,          // ✅ REQUIRED FIX
         chapter,
-        question: a.question,
-        selected_answer: a.selected_answer,
-        correct_answer: a.correct_answer,
+        question: question.questionText,
+        selected_answer,
+        correct_answer: question.correctAnswer,
         is_correct,
-        time_taken: a.time_taken
+        time_taken
       });
     }
 
@@ -45,7 +63,7 @@ exports.submitQuiz = async (req, res) => {
       updated_at: new Date()
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       accuracy,
       avg_time,
       mastery_level
@@ -53,6 +71,6 @@ exports.submitQuiz = async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Quiz submission failed" });
+    return res.status(500).json({ message: "Quiz submission failed" });
   }
 };

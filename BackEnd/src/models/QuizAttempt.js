@@ -11,6 +11,10 @@ const QuizAttempt = sequelize.define("QuizAttempt", {
     type: DataTypes.UUID,
     allowNull: false
   },
+  question_id: {                // ✅ ADD
+    type: DataTypes.UUID,
+    allowNull: false
+  },
   chapter: {
     type: DataTypes.STRING,
     allowNull: false

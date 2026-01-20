@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List, Optional
 
+#DEBUG: proves THIS file is loaded
+print("LOADED agent-service/api/main.py")
+
 from tools.analytics_tool import get_diagnosis_data
 from tools.rag_tool import rag_query
 from services.remediation_service import generate_remediation
@@ -9,10 +12,20 @@ from services.remediation_service import generate_remediation
 from crews.quiz_crew import build_quiz_crew
 from crews.mock_exam_crew import build_mock_exam_crew
 from services.learning_orchestrator import orchestrate_learning
-
 from crews.tutor_feedback_crew import build_tutor_feedback_crew
 
 app = FastAPI(title="Agentic AI Learning Service")
+
+# 🔥 DEBUG ROUTES (DO NOT REMOVE UNTIL CONFIRMED WORKING)
+@app.get("/")
+def root():
+    return {"service": "agent-service", "status": "running"}
+
+@app.get("/__debug")
+def debug():
+    return {"app": "agent-service", "status": "loaded"}
+
+# -------------------- SCHEMAS --------------------
 
 class LearnRequest(BaseModel):
     user_id: str
@@ -32,6 +45,8 @@ class TutorFeedbackRequest(BaseModel):
     question: str
     selected_answer: str
     correct_answer: str
+
+# -------------------- ROUTES --------------------
 
 @app.post("/learn")
 def learn(payload: LearnRequest):
