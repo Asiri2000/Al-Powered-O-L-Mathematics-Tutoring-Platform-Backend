@@ -264,10 +264,27 @@ const QuestionGenerator = () => {
           )}
 
           {feedback === "incorrect" && (
-            <p className="text-red-600 mt-3 flex gap-2 items-center">
-              <XCircle /> Incorrect. Try again.
-            </p>
-          )}
+  <div className="mt-4 p-4 border border-red-300 rounded bg-red-50">
+    <p className="text-red-600 flex gap-2 items-center font-semibold">
+      <XCircle /> Incorrect
+    </p>
+
+    <p className="mt-2 text-sm">
+      <strong>Your Answer:</strong> {selectedOption}
+    </p>
+
+    <p className="mt-1 text-sm text-green-700">
+      <strong>Correct Answer:</strong> {question.correct_answer}
+    </p>
+
+    {question.explanation && (
+      <p className="mt-2 text-sm text-gray-700">
+        <strong>Explanation:</strong> {question.explanation}
+      </p>
+    )}
+  </div>
+)}
+
         </div>
       )}
     </div>

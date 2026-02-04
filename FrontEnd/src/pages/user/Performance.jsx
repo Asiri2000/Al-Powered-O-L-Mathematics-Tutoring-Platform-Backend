@@ -7,13 +7,59 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
+/* =========================
+   BADGE IMPORTS
+========================= */
+import DistinctionBadge from "../../assets/badges/A.jpg";
+import VeryGoodBadge from "../../assets/badges/B.jpg";
+import CreditBadge from "../../assets/badges/C.jpg";
+import OrdinaryBadge from "../../assets/badges/S.jpg";
+import FailBadge from "../../assets/badges/F.jpg";
+
 const API_URL = "http://127.0.0.1:5080/api";
 
-/**
- * =========================
- * 📚 LESSONS BY GRADE
- * =========================
- */
+/* =========================
+   BADGE LOGIC
+========================= */
+const getBadgeByAccuracy = (accuracy = 0) => {
+  if (accuracy >= 75)
+    return {
+      image: DistinctionBadge,
+      label: "A – Distinction",
+      message: "Excellent work! You are exam ready 🎯",
+    };
+
+  if (accuracy >= 65)
+    return {
+      image: VeryGoodBadge,
+      label: "B – Very Good Pass",
+      message: "Great performance! Keep pushing forward 💪",
+    };
+
+  if (accuracy >= 50)
+    return {
+      image: CreditBadge,
+      label: "C – Credit Pass",
+      message: "Good progress! A little more practice will help 📘",
+    };
+
+  if (accuracy >= 35)
+    return {
+      image: OrdinaryBadge,
+      label: "S – Ordinary Pass",
+      message: "You passed! Focus on weak areas to improve 🔁",
+    };
+
+  return {
+    image: FailBadge,
+    label: "F – Needs Improvement",
+    message: "Don’t worry. Practice makes perfect 🌱",
+  };
+};
+
+/* =========================
+   LESSONS BY GRADE
+========================= */
 const lessonsByGrade = {
   "10": [
     "Perimeter",
@@ -167,31 +213,57 @@ const Performance = () => {
           </p>
         )}
 
-        {/* Stats */}
-        {performance && !loading && (
-          <div className="space-y-5">
-            <StatCard
-              title="Accuracy"
-              value={`${performance.accuracy_percentage ?? 0}%`}
-              subtext={`${performance.total_attempts ?? 0} attempts`}
-              icon={<CheckCircle2 className="w-8 h-8 text-black" />}
-            />
+        {/* Badge + Stats */}
+        {performance && !loading && (() => {
+          const badge = getBadgeByAccuracy(
+            performance.accuracy_percentage
+          );
 
-            <StatCard
-              title="Average Time"
-              value={`${performance.avg_time_seconds ?? 0}s`}
-              subtext="Per question"
-              icon={<Award className="w-8 h-8 text-black" />}
-            />
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* LEFT – BADGE */}
+              <div className="bg-white rounded-2xl p-6 shadow-md flex flex-col items-center justify-center text-center">
+                <img
+                  src={badge.image}
+                  alt={badge.label}
+                  className="w-32 h-32 mb-4"
+                />
+                <h3 className="text-xl font-bold text-black mb-2">
+                  {badge.label}
+                </h3>
+                <p className="text-gray-600 font-medium">
+                  {badge.message}
+                </p>
+              </div>
 
-            <StatCard
-              title="Lesson"
-              value={performance.lesson}
-              subtext={`Grade ${performance.grade}`}
-              icon={<BookOpen className="w-8 h-8 text-black" />}
-            />
-          </div>
-        )}
+              {/* RIGHT – STATS */}
+              <div className="md:col-span-2 space-y-5">
+                <StatCard
+                  title="Accuracy"
+                  value={`${performance.accuracy_percentage ?? 0}%`}
+                  subtext={`${performance.total_attempts ?? 0} attempts`}
+                  icon={<CheckCircle2 className="w-8 h-8 text-black" />}
+                />
+
+                <StatCard
+                  title="Average Time"
+                  value={`${performance.avg_time_seconds ?? 0}s`}
+                  subtext="Per question"
+                  icon={<Award className="w-8 h-8 text-black" />}
+                />
+
+                <StatCard
+                  title="Lesson"
+                  value={performance.lesson}
+                  subtext={`Grade ${performance.grade}`}
+                  icon={<BookOpen className="w-8 h-8 text-black" />}
+                />
+              </div>
+
+            </div>
+          );
+        })()}
 
         {!performance && grade && lesson && !loading && (
           <p className="text-center text-gray-500 mt-6">
