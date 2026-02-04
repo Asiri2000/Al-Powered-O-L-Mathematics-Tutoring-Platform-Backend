@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
 from generators.registry import get_generator
+from services.adaptive_quiz_orchestrator import generate_adaptive_question
 
 print("✅ LOADED agent-service/api/main.py")
 
@@ -23,3 +24,12 @@ def generate_quiz(payload: QuizRequest):
     return {
         "questions": [question]
     }
+
+@app.post("/generate-adaptive-quiz")
+def generate_quiz(payload: dict):
+    return generate_adaptive_question(
+        grade=payload["grade"],
+        topic=payload["topic"],
+        analytics=payload["analytics"],
+        current_difficulty=payload["current_difficulty"]
+    )
