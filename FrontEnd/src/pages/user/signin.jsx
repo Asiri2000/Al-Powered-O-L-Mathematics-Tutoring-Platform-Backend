@@ -1,275 +1,235 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { registerUser } from '../../api';
+
 const Signin = () => {
   const [formData, setFormData] = useState({
     studentName: '',
     username: '',
+    email: '',
     password: '',
     confirmPassword: '',
     grade: '',
-    school: ''
+    school: '',
   });
-  
+
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const schools = ['Kg/Mw/Halpitiya K.V', 'Kg/Mw/Parakrama M.V', 'Kg/Puwakdeniya Model School'];
+  const schools = [
+    'Kg/Mw/Halpitiya K.V',
+    'Kg/Mw/Parakrama M.V',
+    'Kg/Puwakdeniya Model School',
+  ];
+
   const grades = ['10', '11'];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-    // Clear error for this field
+    setFormData({ ...formData, [name]: value });
+
     if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: ''
-      });
+      setErrors({ ...errors, [name]: '' });
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.studentName.trim()) {
       newErrors.studentName = 'Student name is required';
     }
-    
+
     if (!formData.username.trim()) {
       newErrors.username = 'Username is required';
-    } else if (formData.username.length < 3) {
-      newErrors.username = 'Username must be at least 3 characters';
     }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    }
+
+    if (!formData.password || formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    
-    
+
+    if (!formData.grade) {
+      newErrors.grade = 'Grade is required';
+    }
+
+    if (!formData.school) {
+      newErrors.school = 'School is required';
+    }
+
     return newErrors;
   };
 
-  const handleSubmit = async (e) => { // <--- Make async
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
-    
-    if (Object.keys(validationErrors).length === 0) {
-      setIsLoading(true);
-      try {
-        // 1. Call the Backend
-        await registerUser(formData);
-        
-        // 2. Success!
-        alert('Account created successfully! Please login.');
-        navigate('/login');
-      } catch (err) {
-        // 3. Handle Backend Errors (e.g. "Username already taken")
-        console.error(err);
-        setErrors({ 
-          username: err.detail || 'Registration failed. Please try again.' 
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
+
+    if (Object.keys(validationErrors).length !== 0) {
       setErrors(validationErrors);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await registerUser({
+        studentName: formData.studentName,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        grade: formData.grade,
+        school: formData.school,
+      });
+
+      alert('Account created successfully! Please login.');
+      navigate('/login');
+
+    } catch (error) {
+      console.error(error);
+      setErrors({
+        username: 'Registration failed. Email or username may already exist.',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-green-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8 border border-emerald-100">
+
+        {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4">
-            <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            <svg
+              className="w-8 h-8 text-emerald-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+              />
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-emerald-900">Create Account</h1>
           <p className="text-emerald-600 mt-2">Join our student community</p>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* Name + Username */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-emerald-800 mb-2">
-                Student Name *
-              </label>
-              <input
-                type="text"
-                name="studentName"
-                value={formData.studentName}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.studentName ? 'border-red-500' : 'border-emerald-200'
-                } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200`}
-                placeholder="Enter your full name"
-              />
-              {errors.studentName && (
-                <p className="text-red-500 text-sm mt-1">{errors.studentName}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-emerald-800 mb-2">
-                Username *
-              </label>
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.username ? 'border-red-500' : 'border-emerald-200'
-                } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200`}
-                placeholder="Choose a username"
-              />
-              {errors.username && (
-                <p className="text-red-500 text-sm mt-1">{errors.username}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-emerald-800 mb-2">
-                Password *
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.password ? 'border-red-500' : 'border-emerald-200'
-                } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200`}
-                placeholder="Create a password"
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-emerald-800 mb-2">
-                Re-enter Password *
-              </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.confirmPassword ? 'border-red-500' : 'border-emerald-200'
-                } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200`}
-                placeholder="Confirm your password"
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-emerald-800 mb-2">
-                Select Grade *
-              </label>
-              <div className="flex space-x-4">
-                {grades.map((grade) => (
-                  <label key={grade} className="flex items-center">
-                    <input
-                      type="radio"
-                      name="grade"
-                      value={grade}
-                      checked={formData.grade === grade}
-                      onChange={handleChange}
-                      className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-emerald-300"
-                    />
-                    <span className="ml-2 text-emerald-700">Grade {grade}</span>
-                  </label>
-                ))}
-              </div>
-              {errors.grade && (
-                <p className="text-red-500 text-sm mt-1">{errors.grade}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-emerald-800 mb-2">
-                Select School *
-              </label>
-              <select
-                name="school"
-                value={formData.school}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  errors.school ? 'border-red-500' : 'border-emerald-200'
-                } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200`}
-              >
-                <option value="">Choose your school</option>
-                {schools.map((school) => (
-                  <option key={school} value={school}>
-                    {school}
-                  </option>
-                ))}
-              </select>
-              {errors.school && (
-                <p className="text-red-500 text-sm mt-1">{errors.school}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center">
             <input
-              type="checkbox"
-              id="terms"
-              className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-emerald-300 rounded"
+              name="studentName"
+              placeholder="Student Name"
+              value={formData.studentName}
+              onChange={handleChange}
+              className="input"
             />
-            <label htmlFor="terms" className="ml-2 text-sm text-emerald-700">
-              I agree to the{' '}
-              <a href="#" className="text-emerald-600 hover:text-emerald-500 font-medium">
-                Terms of Service
-              </a>{' '}
-              and{' '}
-              <a href="#" className="text-emerald-600 hover:text-emerald-500 font-medium">
-                Privacy Policy
-              </a>
-            </label>
+            <input
+              name="username"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleChange}
+              className="input"
+            />
           </div>
 
+          {/* Email */}
+          <input
+            name="email"
+            type="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            className="input"
+          />
+
+          {/* Passwords */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              className="input"
+            />
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="input"
+            />
+          </div>
+
+          {/* Grade + School */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block mb-2 font-medium">Grade</label>
+              {grades.map((grade) => (
+                <label key={grade} className="mr-4">
+                  <input
+                    type="radio"
+                    name="grade"
+                    value={grade}
+                    checked={formData.grade === grade}
+                    onChange={handleChange}
+                  />{' '}
+                  Grade {grade}
+                </label>
+              ))}
+            </div>
+
+            <select
+              name="school"
+              value={formData.school}
+              onChange={handleChange}
+              className="input"
+            >
+              <option value="">Select School</option>
+              {schools.map((school) => (
+                <option key={school} value={school}>
+                  {school}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-emerald-700 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition duration-200 transform hover:-translate-y-0.5"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold py-3 rounded-lg"
           >
-            Create Account
+            {isLoading ? 'Creating account...' : 'Create Account'}
           </button>
 
-          <div className="text-center">
-            <p className="text-emerald-700">
-              Already have an account?{' '}
-              <Link to="/login" className="font-semibold text-emerald-600 hover:text-emerald-500">
-                Sign in
-              </Link>
-            </p>
-          </div>
+          <p className="text-center text-emerald-700">
+            Already have an account?{' '}
+            <Link to="/login" className="font-semibold text-emerald-600">
+              Sign in
+            </Link>
+          </p>
         </form>
 
-        <div className="mt-8 pt-8 border-t border-emerald-100">
-          <p className="text-center text-sm text-emerald-600">
-            © 2024 Student Portal. All rights reserved.
-          </p>
+        <div className="mt-8 pt-8 border-t border-emerald-100 text-center text-sm text-emerald-600">
+          © 2024 Student Portal. All rights reserved.
         </div>
       </div>
     </div>

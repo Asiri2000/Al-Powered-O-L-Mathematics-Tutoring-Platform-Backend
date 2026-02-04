@@ -1,13 +1,8 @@
 const { sequelize } = require('../config/database');
 
-/**
- * @desc    Get chapter-wise analytics for a user
- * @route   GET /api/analytics/chapters/:userId
- * @access  Private
- */
 exports.getChapterAnalytics = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user.id;
 
     const results = await sequelize.query(
       `
@@ -23,28 +18,23 @@ exports.getChapterAnalytics = async (req, res) => {
       FROM quiz_attempts
       WHERE user_id = :userId
       GROUP BY chapter
-      ORDER BY accuracy_percentage ASC;
+      ORDER BY accuracy_percentage ASC
       `,
       {
         replacements: { userId },
-        type: sequelize.QueryTypes.SELECT
+        type: sequelize.QueryTypes.SELECT,
       }
     );
 
-    res.status(200).json(results);
+    res.json(results);
   } catch (error) {
     res.status(500).json({ message: 'Analytics error', error: error.message });
   }
 };
 
-/**
- * @desc    Get overall performance summary
- * @route   GET /api/analytics/summary/:userId
- * @access  Private
- */
 exports.getOverallSummary = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user.id;
 
     const [result] = await sequelize.query(
       `
@@ -57,15 +47,15 @@ exports.getOverallSummary = async (req, res) => {
         ) AS accuracy_percentage,
         ROUND(AVG(time_taken), 2) AS avg_time_seconds
       FROM quiz_attempts
-      WHERE user_id = :userId;
+      WHERE user_id = :userId
       `,
       {
         replacements: { userId },
-        type: sequelize.QueryTypes.SELECT
+        type: sequelize.QueryTypes.SELECT,
       }
     );
 
-    res.status(200).json(result);
+    res.json(result);
   } catch (error) {
     res.status(500).json({ message: 'Analytics error', error: error.message });
   }

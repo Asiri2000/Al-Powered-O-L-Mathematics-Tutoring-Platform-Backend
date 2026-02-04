@@ -1,4 +1,3 @@
-// BackEnd/src/models/ChapterMastery.js
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/database");
 
@@ -6,43 +5,39 @@ const ChapterMastery = sequelize.define("ChapterMastery", {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    primaryKey: true,
   },
   user_id: {
     type: DataTypes.UUID,
-    allowNull: false
+    allowNull: false,
   },
   chapter: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
   },
   mastery_level: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
   },
   accuracy: {
     type: DataTypes.FLOAT,
-    allowNull: false
+    allowNull: false,
   },
   avg_time: {
     type: DataTypes.FLOAT,
-    allowNull: false
+    allowNull: false,
   },
   difficulty_level: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
   },
   total_attempts: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
   },
-  updated_at: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
-  }
 }, {
   tableName: "chapter_mastery",
-  timestamps: false
+  timestamps: true,
 });
 
 module.exports = ChapterMastery;

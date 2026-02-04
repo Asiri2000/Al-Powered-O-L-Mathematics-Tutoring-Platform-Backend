@@ -1,6 +1,11 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
+/**
+ * =========================
+ * 🔐 PROTECT ROUTES
+ * =========================
+ */
 exports.protect = async (req, res, next) => {
   let token;
 
@@ -18,17 +23,6 @@ exports.protect = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // ✅ ALLOW AGENT-SERVICE TOKEN
-    if (decoded.service === "agent-service") {
-      req.agent = true;
-      return next();
-    }
-
-    // 👤 NORMAL USER TOKEN FLOW
-    if (!decoded.id) {
-      return res.status(401).json({ message: "Invalid token payload" });
-    }
-
     const user = await User.findByPk(decoded.id, {
       attributes: { exclude: ["password"] },
     });
@@ -42,4 +36,21 @@ exports.protect = async (req, res, next) => {
   } catch (error) {
     return res.status(401).json({ message: "Token is invalid" });
   }
+};
+
+/**
+ * =========================
+ * 🛡 ROLE AUTHORIZATION
+ * =========================
+ * Usage: authorize('admin')
+ */
+exports.authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        message: "Access denied: insufficient permissions",
+      });
+    }
+    next();
+  };
 };

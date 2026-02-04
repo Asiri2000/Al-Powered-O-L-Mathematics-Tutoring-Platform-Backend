@@ -1,117 +1,129 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { loginUser,getCurrentUser } from '../../api';
+import { loginUser } from '../../api';
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    username: '',
-    password: ''
+    email: '',
+    password: '',
   });
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-    // Clear error for this field
+    setFormData({ ...formData, [name]: value });
+
     if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: ''
-      });
+      setErrors({ ...errors, [name]: '' });
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
     }
-    
+
     return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
-    
-    if (Object.keys(validationErrors).length === 0) {
-      setIsLoading(true);
-      try {
-        // 1. Call Backend
-        const data = await loginUser(formData);
-        sessionStorage.setItem('accessToken', data.access_token);
-        
-        // 2. Fetch User Details to get the ROLE
-        const userProfile = await getCurrentUser();
-        // 3. Store Username AND Role
-        sessionStorage.setItem('username', userProfile.username); // or userProfile.full_name
-        sessionStorage.setItem('user_role', userProfile.user_role);  // <--- SAVE ROLE HERE
-        window.dispatchEvent(new Event("authChange"));
-        // 3. Redirect
-        // You might want to fetch user details here using the token, but for now just redirect
-        if (userProfile.user_role === 'admin') {
-            navigate('/admin');
-        } else {
-            navigate('/');
-        }        
-      } catch (err) {
-        console.error(err);
-        setErrors({ 
-          password: 'Incorrect username or password' // Generic error for security
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
+
+    if (Object.keys(validationErrors).length !== 0) {
       setErrors(validationErrors);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // 🔐 Call backend login
+      const response = await loginUser(formData);
+
+      // ✅ Store token & user info
+      sessionStorage.setItem('accessToken', response.token);
+      sessionStorage.setItem('username', response.user.username);
+      sessionStorage.setItem('user_role', response.user.role);
+
+      // Notify navbar / protected routes
+      window.dispatchEvent(new Event('authChange'));
+
+      // 🔀 Redirect by role
+      if (response.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+
+    } catch (error) {
+      console.error(error);
+      setErrors({
+        password: 'Invalid email or password',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-green-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 border border-emerald-100">
+
+        {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4">
-            <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            <svg
+              className="w-8 h-8 text-emerald-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-emerald-900">Welcome Back</h1>
           <p className="text-emerald-600 mt-2">Sign in to your account</p>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-emerald-800 mb-2">
-              Username
+              Email
             </label>
             <input
-              type="text"
-              name="username"
-              value={formData.username}
+              type="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
               className={`w-full px-4 py-3 rounded-lg border ${
-                errors.username ? 'border-red-500' : 'border-emerald-200'
-              } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200`}
-              placeholder="Enter your username"
+                errors.email ? 'border-red-500' : 'border-emerald-200'
+              } focus:outline-none focus:ring-2 focus:ring-emerald-500`}
+              placeholder="Enter your email"
             />
-            {errors.username && (
-              <p className="text-red-500 text-sm mt-1">{errors.username}</p>
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
             )}
           </div>
 
+          {/* Password */}
           <div>
             <label className="block text-sm font-medium text-emerald-800 mb-2">
               Password
@@ -123,7 +135,7 @@ const Login = () => {
               onChange={handleChange}
               className={`w-full px-4 py-3 rounded-lg border ${
                 errors.password ? 'border-red-500' : 'border-emerald-200'
-              } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200`}
+              } focus:outline-none focus:ring-2 focus:ring-emerald-500`}
               placeholder="Enter your password"
             />
             {errors.password && (
@@ -131,33 +143,20 @@ const Login = () => {
             )}
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="remember"
-                className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-emerald-300 rounded"
-              />
-              <label htmlFor="remember" className="ml-2 text-sm text-emerald-700">
-                Remember me
-              </label>
-            </div>
-            <a href="#" className="text-sm font-medium text-emerald-600 hover:text-emerald-500">
-              Forgot password?
-            </a>
-          </div>
-
+          {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-emerald-700 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition duration-200 transform hover:-translate-y-0.5"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-emerald-700 hover:to-green-700 transition"
           >
-            Sign In
+            {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
 
+          {/* Signup */}
           <div className="text-center">
             <p className="text-emerald-700">
-              Don't have an account?{' '}
-              <Link to="/signup" className="font-semibold text-emerald-600 hover:text-emerald-500">
+              Don&apos;t have an account?{' '}
+              <Link to="/signup" className="font-semibold text-emerald-600">
                 Sign up
               </Link>
             </p>
@@ -169,6 +168,7 @@ const Login = () => {
             © 2024 Student Portal. All rights reserved.
           </p>
         </div>
+
       </div>
     </div>
   );

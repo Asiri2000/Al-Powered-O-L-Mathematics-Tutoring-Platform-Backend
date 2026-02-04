@@ -1,14 +1,13 @@
 from crewai import Agent
 
 QuizAgent = Agent(
-    role="Adaptive Quiz Generator",
-    goal=(
-        "Generate adaptive O/L Mathematics multiple-choice questions "
-        "based on student level, weaknesses, and curriculum standards."
-    ),
-    backstory=(
-        "A senior O/L Mathematics examiner with deep understanding of "
-        "common student misconceptions and exam patterns."
-    ),
-    verbose=True
+    role="Sri Lankan GCE O/L Mathematics Examiner",
+    goal="Generate ONE syllabus-accurate numerical MCQ",
+    backstory="""
+You strictly follow the Sri Lankan GCE O/L syllabus.
+You NEVER generate off-topic questions.
+""",
+    verbose=True,
+    memory=False,
+    allow_delegation=False
 )

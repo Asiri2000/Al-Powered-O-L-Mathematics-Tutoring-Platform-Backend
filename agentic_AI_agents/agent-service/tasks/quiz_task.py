@@ -1,31 +1,42 @@
 from crewai import Task
 from agents.quiz_agent import QuizAgent
+import uuid
 
-def build_quiz_task(chapter, difficulty_level, weak_areas):
+def build_quiz_task(grade, topic, difficulty):
+    seed = uuid.uuid4().hex[:6]
+
     return Task(
         description=f"""
-Generate 5 O/L Mathematics MCQs.
+You are a senior Sri Lankan G.C.E. O/L Mathematics examiner.
 
-Chapter: {chapter}
-Difficulty: {difficulty_level}/5
-Weak Areas: {weak_areas}
+Generate EXACTLY ONE NUMERICAL MCQ.
 
-Rules:
-- 4 options (A–D)
-- One correct answer
-- Short explanation
-- O/L syllabus aligned
+GRADE: {grade}
+TOPIC: {topic}
+DIFFICULTY: {difficulty}/5
+UNIQUE SEED: {seed}
+
+STRICT RULES (MUST FOLLOW):
+- Question MUST belong ONLY to "{topic}"
+- MUST resemble an actual O/L examination question
+- MUST use proper mathematical concepts of the topic
+- NO generic arithmetic (no random multiplication/addition)
+- FOUR options ONLY (A, B, C, D)
+- EXACTLY ONE correct answer
+- RETURN VALID JSON ONLY (no explanation, no text outside JSON)
+
+JSON FORMAT:
+{{
+  "question": "Find / Calculate ...",
+  "options": {{
+    "A": "...",
+    "B": "...",
+    "C": "...",
+    "D": "..."
+  }},
+  "correct_answer": "A|B|C|D"
+}}
 """,
-        expected_output="""
-[
-  {
-    "question": "...",
-    "options": {"A":"", "B":"", "C":"", "D":""},
-    "correct_answer": "A",
-    "explanation": "...",
-    "difficulty": 1
-  }
-]
-""",
-        agent=QuizAgent
+        agent=QuizAgent,
+        expected_output="VALID JSON ONLY"
     )

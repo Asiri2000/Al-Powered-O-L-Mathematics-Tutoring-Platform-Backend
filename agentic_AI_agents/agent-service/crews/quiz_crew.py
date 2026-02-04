@@ -1,8 +1,9 @@
 from crewai import Crew
 from tasks.quiz_task import build_quiz_task
 
-def build_quiz_crew(chapter, difficulty_level, weak_areas):
-    task = build_quiz_task(chapter, difficulty_level, weak_areas)
+def build_quiz_crew(grade, topic, difficulty_level, weak_areas):
+    task = build_quiz_task(grade, topic, difficulty_level)
+
     return Crew(
         agents=[task.agent],
         tasks=[task],

@@ -1,57 +1,104 @@
 const QuizAttempt = require("../models/QuizAttempt");
 const ChapterMastery = require("../models/ChapterMastery");
-const Question = require("../models/Question");
 
-exports.submitQuiz = async (req, res) => {
+/**
+ * POST /api/quiz/submit
+ * Save quiz attempt + update mastery analytics
+ */
+exports.submitQuiz = async (req, res, next) => {
   try {
-    const user_id = req.user.id; // 🔒 Authenticated user
-    const { chapter, answers, difficulty_level } = req.body;
+    const user_id = req.user.id;
 
-    if (!chapter || !Array.isArray(answers) || answers.length === 0) {
-      return res.status(400).json({ message: "Invalid quiz payload" });
-    }
+    const {
+      question_id,
+      chapter,
+      question,
+      selected_answer,
+      correct_answer,
+      time_taken,
+    } = req.body;
 
-    let correct = 0;
-    let totalTime = 0;
-
-    for (const a of answers) {
-      const { questionId, selected_answer, time_taken } = a;
-
-      // 🔒 1. Fetch question from DB (source of truth)
-      const question = await Question.findByPk(questionId);
-
-      if (!question) {
-        return res.status(404).json({ message: "Question not found" });
-      }
-
-      // 🔒 2. Backend validation
-      const is_correct = question.correctAnswer === selected_answer;
-
-      if (is_correct) correct++;
-      totalTime += time_taken;
-
-      // 🔒 3. Store validated attempt (FIX IS HERE)
-      await QuizAttempt.create({
-        user_id,
-        question_id: question.id,          // ✅ REQUIRED FIX
-        chapter,
-        question: question.questionText,
-        selected_answer,
-        correct_answer: question.correctAnswer,
-        is_correct,
-        time_taken
+    /* =========================
+       🛡 VALIDATION
+    ========================= */
+    if (
+      !question_id ||
+      !chapter ||
+      !question ||
+      !selected_answer ||
+      !correct_answer ||
+      typeof time_taken !== "number"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing or invalid required fields",
       });
     }
 
-    const accuracy = correct / answers.length;
-    const avg_time = totalTime / answers.length;
+    const is_correct = selected_answer === correct_answer;
 
-    // ---------- Mastery Curve ----------
+    /* =========================
+       1️⃣ SAVE QUIZ ATTEMPT
+    ========================= */
+    await QuizAttempt.create({
+      user_id,
+      question_id,
+      chapter,
+      question,
+      selected_answer,
+      correct_answer,
+      is_correct,
+      time_taken,
+    });
+
+    /* =========================
+       2️⃣ RECALCULATE STATS
+    ========================= */
+    const attempts = await QuizAttempt.findAll({
+      where: { user_id, chapter },
+    });
+
+    const total_attempts = attempts.length;
+
+    const correctCount = attempts.filter(
+      (a) => a.is_correct === true
+    ).length;
+
+    const totalTime = attempts.reduce(
+      (sum, a) => sum + (a.time_taken || 0),
+      0
+    );
+
+    const accuracy =
+      total_attempts > 0
+        ? Number((correctCount / total_attempts).toFixed(2))
+        : 0;
+
+    const avg_time =
+      total_attempts > 0
+        ? Math.round(totalTime / total_attempts)
+        : 0;
+
+    /* =========================
+       3️⃣ MASTERY + DIFFICULTY
+    ========================= */
     let mastery_level = "BEGINNER";
-    if (accuracy >= 0.8) mastery_level = "EXAM_READY";
-    else if (accuracy >= 0.65) mastery_level = "PROFICIENT";
-    else if (accuracy >= 0.5) mastery_level = "PRACTICING";
+    let difficulty_level = 2;
 
+    if (accuracy >= 0.8) {
+      mastery_level = "EXAM_READY";
+      difficulty_level = 5;
+    } else if (accuracy >= 0.65) {
+      mastery_level = "PROFICIENT";
+      difficulty_level = 4;
+    } else if (accuracy >= 0.5) {
+      mastery_level = "PRACTICING";
+      difficulty_level = 3;
+    }
+
+    /* =========================
+       4️⃣ UPSERT CHAPTER MASTERY
+    ========================= */
     await ChapterMastery.upsert({
       user_id,
       chapter,
@@ -59,18 +106,24 @@ exports.submitQuiz = async (req, res) => {
       accuracy,
       avg_time,
       difficulty_level,
-      total_attempts: answers.length,
-      updated_at: new Date()
+      total_attempts,
     });
 
-    return res.status(200).json({
+    /* =========================
+       ✅ RESPONSE
+    ========================= */
+    res.status(201).json({
+      success: true,
+      is_correct,
       accuracy,
       avg_time,
-      mastery_level
+      mastery_level,
+      difficulty_level,
+      total_attempts,
     });
 
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Quiz submission failed" });
+    console.error("🔥 Quiz submit failed:", error);
+    next(error);
   }
 };

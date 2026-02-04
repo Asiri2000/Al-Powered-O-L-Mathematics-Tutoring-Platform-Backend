@@ -1,63 +1,136 @@
-// src/api.js
-import axios from 'axios';
+// FrontEnd/src/api.js
+import axios from "axios";
 
-const API_URL = 'http://127.0.0.1:8000/api/v1';
+/**
+ * =========================
+ * 🔗 API CONFIGURATION
+ * =========================
+ */
+const API_URL = "http://127.0.0.1:5080/api";
 
+// Create Axios instance
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+/**
+ * =========================
+ * 🔐 TOKEN INTERCEPTOR
+ * =========================
+ * Automatically attach JWT token
+ */
+api.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+/**
+ * =========================
+ * 🔐 AUTH APIs
+ * =========================
+ */
+
+// REGISTER USER
 export const registerUser = async (userData) => {
-  try {
-    // We send JSON. Pydantic aliases handle 'studentName' -> 'full_name' mapping
-    const response = await axios.post(`${API_URL}/users/register`, userData);
-    return response.data;
-  } catch (error) {
-    throw error.response ? error.response.data : new Error('Network Error');
-  }
+  const response = await api.post("/auth/register", userData);
+  return response.data;
 };
 
+// LOGIN USER
 export const loginUser = async (credentials) => {
-  try {
-    // FastAPI OAuth2 expects form-data, NOT JSON. We must convert it.
-    const params = new URLSearchParams();
-    params.append('username', credentials.username);
-    params.append('password', credentials.password);
-
-    const response = await axios.post(`${API_URL}/users/login`, params, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response ? error.response.data : new Error('Login failed');
-  }
-};
-
-export const getAllUsers = async () => {
-  const token = sessionStorage.getItem('accessToken');
-  const response = await axios.get(`${API_URL}/users/`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.post("/auth/login", credentials);
   return response.data;
 };
 
-export const updateUserRole = async (userId, newRole) => {
-  const token = sessionStorage.getItem('accessToken');
-  const response = await axios.put(
-    `${API_URL}/users/${userId}/role`, 
-    { user_role: newRole }, // Body
-    { headers: { Authorization: `Bearer ${token}` } } // Headers
-  );
-  return response.data;
-};
+/**
+ * =========================
+ * 👤 USER APIs
+ * =========================
+ */
 
-export const deleteUser = async (userId) => {
-  const token = sessionStorage.getItem('accessToken');
-  await axios.delete(`${API_URL}/users/${userId}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-};
-
+// GET CURRENT USER PROFILE
 export const getCurrentUser = async () => {
-  const token = sessionStorage.getItem('accessToken');
-  const response = await axios.get(`${API_URL}/users/me`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const response = await api.get("/users/profile");
   return response.data;
 };
+
+// GET ALL USERS (ADMIN)
+export const getAllUsers = async () => {
+  const response = await api.get("/users");
+  return response.data;
+};
+
+// DELETE USER (ADMIN)
+export const deleteUser = async (userId) => {
+  const response = await api.delete(`/users/${userId}`);
+  return response.data;
+};
+
+// UPDATE USER ROLE (ADMIN)
+export const updateUserRole = async (userId, role) => {
+  const response = await api.put(`/users/${userId}/role`, { role });
+  return response.data;
+};
+
+/**
+ * =========================
+ * 📊 ANALYTICS APIs
+ * =========================
+ */
+
+// CHAPTER ANALYTICS (LOGGED USER)
+export const getChapterAnalytics = async () => {
+  const response = await api.get("/analytics/chapters");
+  return response.data;
+};
+
+// OVERALL SUMMARY (LOGGED USER)
+export const getOverallSummary = async () => {
+  const response = await api.get("/analytics/summary");
+  return response.data;
+};
+
+/**
+ * =========================
+ * 🧠 DIAGNOSIS APIs
+ * =========================
+ */
+
+export const getErrorBreakdown = async () => {
+  const response = await api.get("/diagnosis/errors");
+  return response.data;
+};
+
+export const getWeakChapters = async () => {
+  const response = await api.get("/diagnosis/weaknesses");
+  return response.data;
+};
+
+/**
+ * =========================
+ * 📝 QUIZ APIs
+ * =========================
+ */
+
+// GENERATE QUIZ (JWT REQUIRED)
+export const generateQuiz = async (payload) => {
+  const response = await api.post("/quiz/generate", payload);
+  return response.data;
+};
+
+// ✅ SUBMIT QUIZ ATTEMPT (CRITICAL)
+export const submitQuizAttempt = async (payload) => {
+  const response = await api.post("/quiz/submit", payload);
+  return response.data;
+};
+
+export default api;
