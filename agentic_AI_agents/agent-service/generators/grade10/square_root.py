@@ -1,6 +1,8 @@
 import random
 import math
 from generators.utils.shuffle import shuffle_options
+from generators.utils.steps_fallback import default_steps
+
 
 def generate(difficulty: int = 3):
     while True:
@@ -19,11 +21,20 @@ def generate(difficulty: int = 3):
 
     options, answer = shuffle_options(correct, list(wrongs))
 
+    steps = [
+        f"We need to find √{number}.",
+        f"Estimate: what number squared is close to {number}?",
+        f"Use a calculator or trial method: √{number} ≈ {correct_value:.2f}",
+        f"Answer: {correct}",
+    ]
+
     return {
         "question": f"Find the square root of {number}, correct to two decimal places.",
         "options": options,
         "correct_answer": answer,
         "difficulty": difficulty,
         "concept": "Square Root",
-        "needs_image": False
+        "needs_image": False,
+        "svg_diagram": None,
+        "steps": steps,
     }

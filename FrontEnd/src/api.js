@@ -133,4 +133,10 @@ export const submitQuizAttempt = async (payload) => {
   return response.data;
 };
 
+// GENERATE MOCK EXAM
+export const generateMockExam = async (grade) => {
+  const response = await api.post("/mock-exam/generate", { grade });
+  return response.data;
+};
+
 export default api;

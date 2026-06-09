@@ -14,6 +14,7 @@ import AdminPage from './pages/admin/adminPage';
 import AddContent from './pages/admin/AddContent';
 import LessonCompanion from './pages/user/lessonCompanion';
 import Lessons from './pages/user/lessons';
+import MockExam from './pages/user/MockExam';
 function App() {
 
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/lesson/:id" element={<LessonCompanion />} />
           <Route path="/lessons" element={<Lessons />} />
+          <Route path="/mock-exam" element={<MockExam />} />
         </Routes>
         <Footer />
     </Router>

@@ -16,9 +16,8 @@ export default function LessonCompanion() {
   useEffect(() => {
     const fetchLesson = async () => {
       try {
-        // NOTE: Ensure your backend is running on port 8000
-        // We are fetching Lesson ID 1. Change '1' to dynamic ID later if needed.
-        const response = await axios.get(`http://127.0.0.1:8000/lessons/${id}/content`);
+        // Fetching lesson content from backend
+        const response = await axios.get(`http://127.0.0.1:5080/api/lessons/${id}/content`);
         setSteps(response.data);
         setLoading(false);
       } catch (error) {

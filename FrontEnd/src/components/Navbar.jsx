@@ -2,34 +2,50 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   BookOpen, Lightbulb, MessageSquare, Bot, 
-  BarChart2, LogIn, UserPlus, Home, LogOut, User 
+  BarChart2, LogIn, UserPlus, Home, LogOut, User, TrendingUp, ClipboardList
 } from 'lucide-react';
+import { getOverallSummary } from '../api';
+
+/* ── Helper: accuracy → grade letter + colour ── */
+const getPerformancePill = (acc = 0) => {
+  if (acc >= 75) return { grade: 'A', label: 'Distinction', color: '#16a34a', bg: '#dcfce7', border: '#86efac' };
+  if (acc >= 65) return { grade: 'B', label: 'Very Good',   color: '#0284c7', bg: '#dbeafe', border: '#93c5fd' };
+  if (acc >= 50) return { grade: 'C', label: 'Credit',      color: '#d97706', bg: '#fef3c7', border: '#fcd34d' };
+  if (acc >= 35) return { grade: 'S', label: 'Pass',        color: '#7c3aed', bg: '#ede9fe', border: '#c4b5fd' };
+  return          { grade: 'W', label: 'Keep Going',  color: '#dc2626', bg: '#fee2e2', border: '#fca5a5' };
+};
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState(null);
-  const [userRole, setUserRole] = useState(null); 
+  const [userRole, setUserRole] = useState(null);
+  const [perfPill, setPerfPill] = useState(null);
 
   // --- CHECK LOGIN STATUS ---
   useEffect(() => {
-    // 1. Function to check storage
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const token = sessionStorage.getItem('accessToken');
       const storedName = sessionStorage.getItem('username');
-      const storedRole = sessionStorage.getItem('user_role'); 
+      const storedRole = sessionStorage.getItem('user_role');
       if (token && storedName) {
         setUsername(storedName);
         setUserRole(storedRole);
+        // Fetch performance pill
+        try {
+          const data = await getOverallSummary();
+          const acc = parseFloat(data?.accuracy_percentage || 0);
+          setPerfPill(getPerformancePill(acc));
+        } catch (_) {
+          setPerfPill(null);
+        }
       } else {
         setUsername(null);
         setUserRole(null);
+        setPerfPill(null);
       }
     };
 
-    // 2. Run on mount
     checkAuth();
-
-    // 3. Listen for login/logout events (so it updates without refreshing)
     window.addEventListener('authChange', checkAuth);
     return () => window.removeEventListener('authChange', checkAuth);
   }, []);
@@ -150,16 +166,17 @@ const Navbar = () => {
             )}
           </NavLink>
 
-          <NavLink to="/companion" className={({ isActive }) => getLinkClasses(isActive)}>
-             {({ isActive }) => (
-              <>
-                <div className={getIconClasses(isActive)}>
-                  <Bot className="w-4 h-4" />
-                </div>
-                Learning Companion
-              </>
-            )}
-          </NavLink>
+          <a 
+            href="http://localhost:3000/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 pb-3 pt-2 text-sm font-medium transition-all text-gray-500 hover:text-green-600"
+          >
+            <div className="p-1 rounded bg-gray-100">
+              <Bot className="w-4 h-4" />
+            </div>
+            Mathematics Tutor
+          </a>
 
           <NavLink to="/lessons" className={({ isActive }) => getLinkClasses(isActive)}>
              {({ isActive }) => (
@@ -171,16 +188,42 @@ const Navbar = () => {
               </>
             )}
           </NavLink>
+
+          <NavLink to="/mock-exam" className={({ isActive }) => getLinkClasses(isActive)}>
+            {({ isActive }) => (
+              <>
+                <div className={getIconClasses(isActive)}>
+                  <ClipboardList className="w-4 h-4" />
+                </div>
+                Mock Exam
+              </>
+            )}
+          </NavLink>
         </div>
 
         <div className="pb-2">
-          <button 
-            onClick={() => navigate('/performance')}
-            className="flex items-center gap-2 px-4 py-1.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-md border border-gray-300 hover:bg-white hover:shadow-sm transition-all"
-          >
-            Your Performance
-            <BarChart2 className="w-4 h-4 text-gray-500" />
-          </button>
+          {perfPill ? (
+            <button
+              onClick={() => navigate('/performance')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '5px 14px', borderRadius: '99px', border: `2px solid ${perfPill.border}`,
+                background: perfPill.bg, color: perfPill.color, cursor: 'pointer',
+                fontWeight: '700', fontSize: '0.82rem', transition: 'all 0.2s',
+              }}
+            >
+              <TrendingUp size={14} />
+              Grade {perfPill.grade} · {perfPill.label}
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/performance')}
+              className="flex items-center gap-2 px-4 py-1.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-md border border-gray-300 hover:bg-white hover:shadow-sm transition-all"
+            >
+              Your Performance
+              <BarChart2 className="w-4 h-4 text-gray-500" />
+            </button>
+          )}
         </div>
       </div>
 

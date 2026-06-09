@@ -47,12 +47,14 @@ const Home = () => {
                 Start Practicing Now
                 <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5" />
               </button>
-              <button 
-                onClick={() => navigate('/companion')}
-                className="bg-white hover:bg-gray-50 text-slate-700 text-base sm:text-lg font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl border border-gray-200 shadow-sm transition-all"
+              <a 
+                href="http://localhost:3000/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-white hover:bg-gray-50 text-slate-700 text-base sm:text-lg font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl border border-gray-200 shadow-sm transition-all flex items-center justify-center"
               >
-                Talk to AI Buddy
-              </button>
+                Start with Mathematics Tutor
+              </a>
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 text-xs sm:text-sm text-slate-500 font-medium pt-2">
@@ -101,7 +103,7 @@ const Home = () => {
           </div>
 
           {/* Feature 2 */}
-          <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm hover:shadow-md transition-all border border-green-50 group cursor-pointer" onClick={() => navigate('/companion')}>
+          <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm hover:shadow-md transition-all border border-green-50 group cursor-pointer" onClick={() => navigate('http://localhost:3000/')}>
             <div className="w-12 sm:w-14 h-12 sm:h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
               <MessageCircle className="w-6 sm:w-8 h-6 sm:h-8 text-blue-700" />
             </div>

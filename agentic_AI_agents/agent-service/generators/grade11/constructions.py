@@ -1,85 +1,38 @@
 import random
 from generators.utils.shuffle import shuffle_options
+from generators.utils.steps_fallback import default_steps
 
 
 def generate(difficulty: int = 3):
-    """
-    Grade 11 – Constructions
-    Mathematical & conceptual questions
-    """
+    qtype = random.choice(["identify", "true_false", "application", "concept"])
 
-    qtype = random.choice(
-        ["identify", "true_false", "application", "concept"]
-    )
-
-    # ------------------------------------------------
-    # IDENTIFY CONSTRUCTION
-    # ------------------------------------------------
     if qtype == "identify":
-        question = (
-            "Which instrument is essential to construct a perpendicular bisector?"
-        )
-
+        question = "Which instrument is essential to construct a perpendicular bisector?"
         correct = "Compass"
-        wrongs = [
-            "Protractor only",
-            "Ruler only",
-            "Set square",
-        ]
+        wrongs = ["Protractor only", "Ruler only", "Set square"]
+        steps = ["A compass draws arcs of fixed radius.", "Perpendicular bisectors require two arcs intersecting above and below.", "Answer: Compass"]
 
-    # ------------------------------------------------
-    # TRUE / FALSE
-    # ------------------------------------------------
     elif qtype == "true_false":
-        question = (
-            "A perpendicular bisector divides a line segment into two equal parts."
-        )
-
+        question = "A perpendicular bisector divides a line segment into two equal parts."
         correct = "True"
-        wrongs = [
-            "False",
-            "Only for horizontal lines",
-            "Cannot be determined",
-        ]
+        wrongs = ["False", "Only for horizontal lines", "Cannot be determined"]
+        steps = ["Perpendicular bisector: meets at 90° AND halves the segment.", "Answer: True"]
 
-    # ------------------------------------------------
-    # APPLICATION
-    # ------------------------------------------------
     elif qtype == "application":
-        question = (
-            "Which construction is used to locate a point equidistant "
-            "from two given points?"
-        )
-
+        question = "Which construction is used to locate a point equidistant from two given points?"
         correct = "Perpendicular bisector"
-        wrongs = [
-            "Angle bisector",
-            "Median",
-            "Altitude",
-        ]
+        wrongs = ["Angle bisector", "Median", "Altitude"]
+        steps = ["Every point on the perpendicular bisector of a segment is equidistant from both endpoints.", "Answer: Perpendicular bisector"]
 
-    # ------------------------------------------------
-    # CONCEPT
-    # ------------------------------------------------
     else:
-        question = (
-            "Why is a compass used in geometric constructions?"
-        )
-
+        question = "Why is a compass used in geometric constructions?"
         correct = "To draw arcs with equal radius"
-        wrongs = [
-            "To measure angles",
-            "To draw straight lines",
-            "To calculate area",
-        ]
+        wrongs = ["To measure angles", "To draw straight lines", "To calculate area"]
+        steps = ["A compass can draw arcs of any fixed radius.", "This is needed to transfer lengths and find intersections.", "Answer: To draw arcs with equal radius"]
 
     options, answer = shuffle_options(correct, wrongs)
-
     return {
-        "question": question,
-        "options": options,
-        "correct_answer": answer,
-        "difficulty": difficulty,
-        "concept": "Constructions",
-        "needs_image": False
+        "question": question, "options": options, "correct_answer": answer,
+        "difficulty": difficulty, "concept": "Constructions",
+        "needs_image": False, "svg_diagram": None, "steps": steps,
     }

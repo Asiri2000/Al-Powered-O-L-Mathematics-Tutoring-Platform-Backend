@@ -24,7 +24,7 @@ export default function Lessons() {
     const fetchLessons = async () => {
       try {
         // Ensure this URL matches your backend
-        const res = await axios.get('http://127.0.0.1:8000/lessons/');
+        const res = await axios.get('http://127.0.0.1:5080/api/lessons/');
         setLessons(res.data);
       } catch (err) {
         console.error("Error fetching lessons:", err);

@@ -19,7 +19,12 @@ class RetrieveResponse(BaseModel):
 def startup_event():
     """
     Ingest PDF and create FAISS vector store on startup
+    (skips if index already exists)
     """
+    import os
+    if os.path.exists("faiss_index/index.faiss"):
+        print("FAISS index already exists – skipping PDF ingestion.")
+        return
     pdf_path = "grade10_11_math.pdf"
     ingest_pdf(pdf_path)
     print(f"PDF '{pdf_path}' ingested successfully.")

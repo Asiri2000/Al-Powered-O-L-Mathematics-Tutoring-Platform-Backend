@@ -22,7 +22,7 @@ export default function AddContent() {
 
   // Load Lessons for Dropdown
   useEffect(() => {
-    axios.get('http://127.0.0.1:8000/lessons/')
+    axios.get('http://127.0.0.1:5080/api/lessons/')
       .then(res => setLessons(res.data))
       .catch(err => console.error(err));
   }, []);
@@ -70,7 +70,7 @@ export default function AddContent() {
 
     // C. Send to Backend
     try {
-      await axios.post('http://127.0.0.1:8000/lessons/add-step', payload);
+      await axios.post('http://127.0.0.1:5080/api/lessons/add-step', payload);
       alert("Content Saved Successfully!");
       // Reset Form
       setTheoryText("");

@@ -1,118 +1,51 @@
 import random
 from generators.utils.shuffle import shuffle_options
+from generators.utils.steps_fallback import default_steps
 
 
 def generate(difficulty: int = 3):
-    """
-    Grade 11 – Sets
+    qtype = random.choice(["set_notation", "cardinality", "union_intersection", "complement", "venn_application"])
 
-    Question Types:
-    - set_notation
-    - cardinality
-    - union_intersection
-    - complement
-    - venn_application
-    """
-
-    qtype = random.choice(
-        [
-            "set_notation",
-            "cardinality",
-            "union_intersection",
-            "complement",
-            "venn_application",
-        ]
-    )
-
-    # ------------------------------------------------
-    # SET NOTATION
-    # ------------------------------------------------
     if qtype == "set_notation":
         question = "Which notation represents the set of natural numbers?"
-
         correct = "ℕ"
-        wrongs = [
-            "ℤ",
-            "ℚ",
-            "ℝ",
-        ]
+        wrongs = ["ℤ", "ℚ", "ℝ"]
+        steps = ["ℕ = Natural numbers {1, 2, 3, ...}", "ℤ = Integers, ℚ = Rationals, ℝ = Reals", "Answer: ℕ"]
 
-    # ------------------------------------------------
-    # CARDINALITY (n(A))
-    # ------------------------------------------------
     elif qtype == "cardinality":
         A = {1, 2, 3, 4, 5}
-        question = f"If A = {A}, find n(A)."
-
+        question = f"If A = {sorted(A)}, find n(A)."
         correct = str(len(A))
-        wrongs = [
-            str(sum(A)),
-            str(max(A)),
-            str(min(A)),
-        ]
+        wrongs = [str(sum(A)), str(max(A)), str(min(A))]
+        steps = [f"n(A) = number of elements in A", f"A has {len(A)} elements", f"Answer: {len(A)}"]
 
-    # ------------------------------------------------
-    # UNION & INTERSECTION
-    # ------------------------------------------------
     elif qtype == "union_intersection":
-        A = {1, 2, 3}
-        B = {3, 4, 5}
-
-        question = f"If A = {A} and B = {B}, find A ∩ B."
-
+        question = "If A = {1, 2, 3} and B = {3, 4, 5}, find A ∩ B."
         correct = "{3}"
-        wrongs = [
-            "{1, 2, 3, 4, 5}",
-            "{1, 2}",
-            "{4, 5}",
-        ]
+        wrongs = ["{1, 2, 3, 4, 5}", "{1, 2}", "{4, 5}"]
+        steps = ["A ∩ B = elements common to BOTH sets.", "Common element: 3", "Answer: {3}"]
 
-    # ------------------------------------------------
-    # COMPLEMENT OF A SET
-    # ------------------------------------------------
     elif qtype == "complement":
-        U = {1, 2, 3, 4, 5, 6}
-        A = {2, 4, 6}
-
-        question = f"If U = {U} and A = {A}, find A′."
-
+        question = "If U = {1, 2, 3, 4, 5, 6} and A = {2, 4, 6}, find A′."
         correct = "{1, 3, 5}"
-        wrongs = [
-            "{2, 4, 6}",
-            "{1, 2, 3}",
-            "{4, 5, 6}",
-        ]
+        wrongs = ["{2, 4, 6}", "{1, 2, 3}", "{4, 5, 6}"]
+        steps = ["A′ = elements in U that are NOT in A.", "U = {1,2,3,4,5,6}, A = {2,4,6}", "A′ = {1, 3, 5}", "Answer: {1, 3, 5}"]
 
-    # ------------------------------------------------
-    # VENN DIAGRAM APPLICATION
-    # ------------------------------------------------
     else:
-        question = (
-            "In a class of 40 students, 25 study Mathematics and 18 study Science. "
-            "If 10 study both subjects, how many study neither subject?"
-        )
-
-        total = 40
-        nM = 25
-        nS = 18
-        nBoth = 10
-
+        nM, nS, nBoth, total = 25, 18, 10, 40
         neither = total - (nM + nS - nBoth)
-
+        question = f"In a class of {total}, {nM} study Maths, {nS} study Science, {nBoth} study both. How many study neither?"
         correct = str(neither)
-        wrongs = [
-            str(nM + nS),
-            str(nBoth),
-            str(total - nM),
+        wrongs = [str(nM + nS), str(nBoth), str(total - nM)]
+        steps = [
+            f"n(M ∪ S) = n(M) + n(S) − n(M ∩ S) = {nM} + {nS} − {nBoth} = {nM+nS-nBoth}",
+            f"Neither = Total − n(M ∪ S) = {total} − {nM+nS-nBoth} = {neither}",
+            f"Answer: {neither}",
         ]
 
     options, answer = shuffle_options(correct, wrongs)
-
     return {
-        "question": question,
-        "options": options,
-        "correct_answer": answer,
-        "difficulty": difficulty,
-        "concept": "Sets",
-        "needs_image": False
+        "question": question, "options": options, "correct_answer": answer,
+        "difficulty": difficulty, "concept": "Sets",
+        "needs_image": False, "svg_diagram": None, "steps": steps,
     }

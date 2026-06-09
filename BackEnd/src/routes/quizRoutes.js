@@ -8,7 +8,7 @@ const quizController = require("../controllers/quizController");
 router.post("/generate", async (req, res) => {
   try {
     const response = await axios.post(
-      "http://127.0.0.1:5002/generate-quiz",
+      "http://127.0.0.1:6000/generate-quiz",
       req.body,
       { timeout: 25000 }
     );

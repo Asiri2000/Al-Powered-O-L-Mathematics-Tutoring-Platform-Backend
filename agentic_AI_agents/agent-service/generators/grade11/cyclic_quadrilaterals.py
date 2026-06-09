@@ -1,114 +1,50 @@
 import random
 from generators.utils.shuffle import shuffle_options
+from generators.utils.steps_fallback import default_steps
 
 
 def generate(difficulty: int = 3):
-    """
-    Grade 11 – Cyclic Quadrilaterals
+    qtype = random.choice(["identify_property", "opposite_angles", "true_false", "concept", "application"])
 
-    Question Types:
-    - identify_property
-    - opposite_angles
-    - true_false
-    - concept
-    - application
-    """
-
-    qtype = random.choice(
-        [
-            "identify_property",
-            "opposite_angles",
-            "true_false",
-            "concept",
-            "application",
-        ]
-    )
-
-    # ------------------------------------------------
-    # IDENTIFY PROPERTY
-    # ------------------------------------------------
     if qtype == "identify_property":
-        question = (
-            "Which of the following is a property of a cyclic quadrilateral?"
-        )
-
+        question = "Which of the following is a property of a cyclic quadrilateral?"
         correct = "Opposite angles are supplementary"
-        wrongs = [
-            "All sides are equal",
-            "Diagonals bisect at right angles",
-            "All angles are equal",
-        ]
+        wrongs = ["All sides are equal", "Diagonals bisect at right angles", "All angles are equal"]
+        steps = ["Key property: in a cyclic quadrilateral, opposite angles add to 180° (supplementary).", "Answer: Opposite angles are supplementary"]
 
-    # ------------------------------------------------
-    # OPPOSITE ANGLES
-    # ------------------------------------------------
     elif qtype == "opposite_angles":
         angle = random.choice([70, 80, 100, 110])
-
-        question = (
-            f"In a cyclic quadrilateral, if one angle is {angle}°, "
-            f"what is the measure of the opposite angle?"
-        )
-
-        correct = f"{180 - angle}°"
-        wrongs = [
-            f"{angle}°",
-            f"{angle / 2}°",
-            f"{angle + 20}°",
+        opp = 180 - angle
+        question = f"In a cyclic quadrilateral, one angle is {angle}°. What is the opposite angle?"
+        correct = f"{opp}°"
+        wrongs = [f"{angle}°", f"{angle/2}°", f"{angle+20}°"]
+        steps = [
+            "Opposite angles of a cyclic quadrilateral are supplementary (sum = 180°).",
+            f"Opposite angle = 180° − {angle}° = {opp}°",
+            f"Answer: {opp}°",
         ]
 
-    # ------------------------------------------------
-    # TRUE / FALSE
-    # ------------------------------------------------
     elif qtype == "true_false":
-        question = (
-            "The sum of opposite angles of a cyclic quadrilateral is 180°."
-        )
-
+        question = "The sum of opposite angles of a cyclic quadrilateral is 180°."
         correct = "True"
-        wrongs = [
-            "False",
-            "Only for squares",
-            "Cannot be determined",
-        ]
+        wrongs = ["False", "Only for squares", "Cannot be determined"]
+        steps = ["Theorem: Opposite angles in a cyclic quadrilateral are supplementary.", "Their sum = 180°.", "Answer: True"]
 
-    # ------------------------------------------------
-    # CONCEPTUAL QUESTION
-    # ------------------------------------------------
     elif qtype == "concept":
-        question = (
-            "When is a quadrilateral said to be cyclic?"
-        )
-
+        question = "When is a quadrilateral said to be cyclic?"
         correct = "When all its vertices lie on a circle"
-        wrongs = [
-            "When all sides are equal",
-            "When diagonals are equal",
-            "When opposite sides are parallel",
-        ]
+        wrongs = ["When all sides are equal", "When diagonals are equal", "When opposite sides are parallel"]
+        steps = ["A cyclic quadrilateral has all four vertices on the circumference of a circle.", "Answer: When all its vertices lie on a circle"]
 
-    # ------------------------------------------------
-    # APPLICATION QUESTION
-    # ------------------------------------------------
     else:
-        question = (
-            "Why are opposite angles of a cyclic quadrilateral supplementary?"
-        )
-
+        question = "Why are opposite angles of a cyclic quadrilateral supplementary?"
         correct = "They subtend the same arc of the circle"
-        wrongs = [
-            "They are vertically opposite angles",
-            "They are alternate interior angles",
-            "They are corresponding angles",
-        ]
+        wrongs = ["They are vertically opposite angles", "They are alternate interior angles", "They are corresponding angles"]
+        steps = ["Each pair of opposite angles subtends the entire circle (360°) at the centre.", "So at the circumference they sum to 180°.", "Answer: They subtend the same arc of the circle"]
 
     options, answer = shuffle_options(correct, wrongs)
-
     return {
-        "question": question,
-        "options": options,
-        "correct_answer": answer,
-        "difficulty": difficulty,
-        "concept": "Cyclic Quadrilaterals",
-        "needs_image": False
+        "question": question, "options": options, "correct_answer": answer,
+        "difficulty": difficulty, "concept": "Cyclic Quadrilaterals",
+        "needs_image": False, "svg_diagram": None, "steps": steps,
     }
